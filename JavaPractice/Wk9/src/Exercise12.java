@@ -43,6 +43,7 @@ class ConcertReservationSystem {
             }
             catch(Exception e) {
                 System.out.println("잘못된 값을 입력했습니다. 다시 입력해주세요.");
+                scanner.nextLine();
                 continue;
             }
         }
@@ -68,6 +69,7 @@ class ConcertReservationSystem {
             }
             catch (Exception e) {
                 System.out.println("잘못된 값을 입력했습니다. 다시 입력해주세요.");
+                scanner.nextLine();
                 continue;
             }
 
@@ -118,6 +120,7 @@ class ConcertReservationSystem {
             }
             catch (Exception e){
                 System.out.println("잘못된 값을 입력했습니다. 다시 입력해주세요.");
+                scanner.nextLine();
                 continue;
             }
         }
@@ -148,7 +151,7 @@ class ConcertReservationSystem {
     }
 
     public static void run() {
-        int option;
+        int option = 0;
 
         for (int i = 0; i < seats.length; i++) {    //객체 배열 생성 및 초기화
             for (int j = 0; j < seats[i].length; j++) {
@@ -164,6 +167,7 @@ class ConcertReservationSystem {
             }
             catch (Exception e) {
                 System.out.println("잘못된 값을 입력했습니다. 다시 입력해주세요.");
+                scanner.nextLine();
                 continue;
             }
 
