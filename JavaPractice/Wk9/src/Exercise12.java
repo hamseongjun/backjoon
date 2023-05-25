@@ -59,12 +59,13 @@ class ConcertReservationSystem {
             try {
                 System.out.print("이름>>");
                 name = scanner.next();
-                System.out.print("번호>>");
-                reserveNum = scanner.nextInt();
+                while (true) {
+                    System.out.print("번호>>");
+                    reserveNum = scanner.nextInt();
 
-                if (reserveNum < 1 || reserveNum > seats[seatGradeToNum - 1].length) {  //1~10 외에 다른 값 입력 방지
-                    System.out.println("잘못된 값을 입력했습니다. 다시 입력해주세요.");
-                    continue;
+                    if (reserveNum < 1 || reserveNum > seats[seatGradeToNum - 1].length)   //1~10 외에 다른 값 입력 방지
+                        System.out.println("잘못된 번호를 입력했습니다. 다시 입력해주세요.");
+                    else break;
                 }
             }
             catch (Exception e) {
@@ -76,7 +77,8 @@ class ConcertReservationSystem {
             boolean IsReserved = false;
             for (int i = 0; i < seats[seatGradeToNum - 1].length; i++) {
                 if (name.equals(seats[seatGradeToNum - 1][i].getName())) {  // 2자리 이상 중복 예약 방지
-                    System.out.println("이미 예약되어있습니다. 다른 이름을 입력해주세요");
+                    int num = i + 1;
+                    System.out.println(name+" 고객님은 " +seatGrade[seatGradeToNum - 1] + "-" + num + "자리를 이미 예약하셨습니다. 다른 이름을 입력해주세요");
                     IsReserved = true;
                     break;
                 }
