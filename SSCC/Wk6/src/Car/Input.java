@@ -19,9 +19,9 @@ public class Input {
         int isSuperCar = scanner.nextInt();
 
         if (isSuperCar == 1) {
-            return new SuperCar(speed, name);
+            return new SuperCar(name, speed);
         } else {
-            return new Car(speed, name);
+            return new Car(name, speed);
         }
     }
 }

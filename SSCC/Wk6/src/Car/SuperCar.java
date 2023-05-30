@@ -7,7 +7,7 @@ public class SuperCar extends Car {
     private int booster = 0;
 
     public SuperCar(String name, int speed) {
-        super(speed, name);
+        super(name, speed);
         final long seed = System.currentTimeMillis();
         random = new Random(seed);
     }
