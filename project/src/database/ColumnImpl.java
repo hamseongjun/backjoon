@@ -16,7 +16,8 @@ class ColumnImpl implements Column {
 
     @Override
     public String getValue(int index) {
-        return String.valueOf(values[index]);
+        if (values[index] == null) { return null; }
+        else { return String.valueOf(values[index]); }
     }
 
 //    @Override
@@ -41,10 +42,33 @@ class ColumnImpl implements Column {
         }
     }
 
-//    @Override
-//    public boolean isNumericColumn() {}
-//
-//    @Override
-//    public long getNullCount() {}
+    @Override
+    public boolean isNumericColumn() {
+        for (int i = 0; i < count(); i++) {
+            if (getValue(i) == null) { continue; }
+            try {
+                Integer value = Integer.valueOf(getValue(i));
+                return true;
+            } catch (NumberFormatException nonInt) {
+                try {
+                    Double value = Double.valueOf(getValue(i));
+                    return true;
+                }
+                catch (NumberFormatException nonDouble) {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public long getNullCount() {
+        int count = 0;
+        for (int i = 0; i < count(); i++) {
+            if(values[i] != null) { count++; }
+        }
+        return count;
+    }
 
 }

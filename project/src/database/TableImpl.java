@@ -30,7 +30,6 @@ class TableImpl implements Table {
         for (int i = 0; i < columns.get(0).count(); i++) {
             for (Column column : columns) {
                 String value = column.getValue(i);
-                if (value == null) { value = "null"; }
                 System.out.printf("%" + widths.get(columns.indexOf(column)) + "s | ", value);
             }
             System.out.println();
@@ -47,12 +46,29 @@ class TableImpl implements Table {
         }
         return maxLength;
     }
-//
-//    @Override
-//    public void describe() {
-//
-//    }
-//
+
+    @Override
+    public void describe() {
+        System.out.println("<" + toString() + ">");
+        int entries = columns.get(0).count();
+        System.out.println("RangeIndex: " + entries + " entries, 0 to " + (entries-1));
+        System.out.println("Data Columns (total " + columns.size() + " columns):");
+
+        System.out.printf("%-3s | %-14s | %-14s | %s\n", "#", "Column", "Non-Null Count", "Dtype");
+
+        int intType = 0, stringType = 0;
+        for (int i = 0; i < columns.size(); i++) {
+            Column column = columns.get(i);
+            String columnName = column.getHeader();
+            long nonNullCount = column.getNullCount();
+            String dtype = null;
+            if (column.isNumericColumn()) { dtype =  "int"; intType++;}
+            else { dtype = "String"; stringType++;}
+            System.out.printf("%-3d | %-14s | %-14s | %s\n", i, columnName, nonNullCount + " non-null", dtype);
+        }
+        System.out.println("dtypes: int(" + intType + "), String(" + stringType + ")");
+    }
+
 //    @Override
 //    public Table head() {}
 //

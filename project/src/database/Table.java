@@ -9,9 +9,9 @@ public interface Table extends Joinable {
     // 테이블 헤더 + 내용 출력
     void show();
 
-//    // 테이블 요약 정보 출력
-//    void describe();
-//
+    // 테이블 요약 정보 출력
+    void describe();
+
 //    /**
 //     * @return 처음 (최대)5개 행으로 구성된 새로운 Table 생성 후 반환
 //     */

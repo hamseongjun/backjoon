@@ -27,10 +27,10 @@ public interface Column {
 
     void show();
 
-//    /**
-//     * @return (int or null)로 구성된 컬럼 or (double or null)로 구성된 컬럼이면 true 반환
-//     */
-//    boolean isNumericColumn();
-//
-//    long getNullCount();
+    /**
+     * @return (int or null)로 구성된 컬럼 or (double or null)로 구성된 컬럼이면 true 반환
+     */
+    boolean isNumericColumn();
+
+    long getNullCount();
 }
