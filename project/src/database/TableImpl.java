@@ -1,6 +1,7 @@
 package database;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -54,7 +55,9 @@ class TableImpl implements Table {
         System.out.println("RangeIndex: " + entries + " entries, 0 to " + (entries-1));
         System.out.println("Data Columns (total " + columns.size() + " columns):");
 
-        System.out.printf("%-3s | %-14s | %-14s | %s\n", "#", "Column", "Non-Null Count", "Dtype");
+        String[] header = {"#", "Column", "Non-Null Count", "Dtype"};
+        int[] maxSize = {header[0].length(), header[1].length(), header[2].length()};
+        List<Object[]> rows = new ArrayList<>();
 
         int intType = 0, stringType = 0;
         for (int i = 0; i < columns.size(); i++) {
@@ -64,7 +67,18 @@ class TableImpl implements Table {
             String dtype = null;
             if (column.isNumericColumn()) { dtype =  "int"; intType++;}
             else { dtype = "String"; stringType++;}
-            System.out.printf("%-3d | %-14s | %-14s | %s\n", i, columnName, nonNullCount + " non-null", dtype);
+
+            Object[] values = {i, columnName, nonNullCount, dtype};
+            rows.add(values);
+
+            if (Integer.toString(i).length() > maxSize[0]) { maxSize[0] = Integer.toString(i).length(); }
+            if (columnName.length() > maxSize[1]) { maxSize[1] = columnName.length(); }
+            if (Long.toString(nonNullCount).length()+9 > maxSize[2]) { maxSize[2] = Long.toString(nonNullCount).length(); }
+        }
+        String s = "%" + maxSize[0] + "s | %" + maxSize[1] + "s | %" + (maxSize[2]-9) + "s";
+        System.out.printf(s + " | %s\n", "#", "Column", "Non-Null Count", "Dtype");
+        for (Object[] row : rows) {
+            System.out.printf(s + " non-null | %s\n", row[0], row[1], row[2], row[3]);
         }
         System.out.println("dtypes: int(" + intType + "), String(" + stringType + ")");
     }
