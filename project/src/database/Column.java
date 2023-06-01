@@ -2,10 +2,10 @@ package database;
 
 public interface Column {
     String getHeader();
-//
-//    /* cell 값을 String으로 반환 */
-//    String getValue(int index);
-//
+
+    /* cell 값을 String으로 반환 */
+    String getValue(int index);
+
 //    /**
 //     * @param index
 //     * @param t Double.class, Long.class, Integer.class
@@ -20,13 +20,13 @@ public interface Column {
 //     */
 //    void setValue(int index, int value);
 //
-//    /**
-//     * @return null 포함 모든 cell 개수 반환
-//     */
-//    int count();
-//
-//    void show();
-//
+    /**
+     * @return null 포함 모든 cell 개수 반환
+     */
+    int count();
+
+    void show();
+
 //    /**
 //     * @return (int or null)로 구성된 컬럼 or (double or null)로 구성된 컬럼이면 true 반환
 //     */

@@ -1,5 +1,6 @@
 package database;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -19,7 +20,32 @@ class TableImpl implements Table {
 
     @Override
     public void show() {
+        List<Integer> widths = new ArrayList<>();
+        for (Column column : columns) {
+            widths.add(getColumnWidth(column));
+            int i = columns.indexOf(column);
+            System.out.printf("%" + widths.get(i) + "s | ", column.getHeader());
+        }
+        System.out.println();
+        for (int i = 0; i < columns.get(0).count(); i++) {
+            for (Column column : columns) {
+                String value = column.getValue(i);
+                if (value == null) { value = "null"; }
+                System.out.printf("%" + widths.get(columns.indexOf(column)) + "s | ", value);
+            }
+            System.out.println();
+        }
+    }
 
+    private int getColumnWidth(Column column) {
+        int maxLength = column.getHeader().length();
+        for (int i = 0; i < column.count(); i++) {
+            int length;
+            if (column.getValue(i) == null) { length = 0; }
+            else { length = column.getValue(i).length(); }
+            if(maxLength < length) { maxLength = length; }
+        }
+        return maxLength;
     }
 //
 //    @Override
