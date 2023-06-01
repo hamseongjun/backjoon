@@ -55,8 +55,9 @@ public class Database {
             Object[] values = new Object[rows.size()];
             for (int i = 0; i < rows.size(); i++) {
                 values[i] = rows.get(i).get(columns.indexOf(column));
+                if (values[i].equals("")) { values[i] = null; }
             }
-            ColumnImpl columnImpl = new ColumnImpl(column, values);
+            Column columnImpl = new ColumnImpl(column, values);
             columnObjects.add(columnImpl);
         }
 

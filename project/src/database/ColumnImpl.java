@@ -16,7 +16,6 @@ class ColumnImpl implements Column {
 
     @Override
     public String getValue(int index) {
-        if (String.valueOf(values[index]).equals("")) { return null; }
         return String.valueOf(values[index]);
     }
 
@@ -36,20 +35,10 @@ class ColumnImpl implements Column {
 
     @Override
     public void show() {
-        int width = getColumnWidth();
-        System.out.printf("%" + width + "d\n", header);
+        System.out.println(header);
         for (Object value : values) {
-            System.out.printf("%" + width + "d\n", value);
+            System.out.println(value);
         }
-    }
-
-    private int getColumnWidth() {
-        int maxLength = header.length();
-        for(Object value : values) {
-            String string = String.valueOf(value);
-            if (maxLength < string.length()) { maxLength = string.length(); }
-        }
-        return maxLength;
     }
 
 //    @Override
