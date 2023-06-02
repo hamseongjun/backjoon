@@ -72,15 +72,15 @@ public interface Table extends Joinable {
      */
     Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst);
 
-//    int getRowCount();
-//    int getColumnCount();
-//
-//    /**
-//     * @return 원본 Column이 반환된다. 따라서, 반환된 Column에 대한 조작은 원본 Table에 영향을 끼친다.
-//     */
-//    Column getColumn(int index);
-//    /**
-//     * @return 원본 Column이 반환된다. 따라서, 반환된 Column에 대한 조작은 원본 Table에 영향을 끼친다.
-//     */
-//    Column getColumn(String name);
+    int getRowCount();
+    int getColumnCount();
+
+    /**
+     * @return 원본 Column이 반환된다. 따라서, 반환된 Column에 대한 조작은 원본 Table에 영향을 끼친다.
+     */
+    Column getColumn(int index);
+    /**
+     * @return 원본 Column이 반환된다. 따라서, 반환된 Column에 대한 조작은 원본 Table에 영향을 끼친다.
+     */
+    Column getColumn(String name);
 }

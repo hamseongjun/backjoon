@@ -11,6 +11,15 @@ class TableImpl implements Table {
         this.columns = columns;
     }
 
+    TableImpl(Table table) {
+        this.name = table.getName();
+        this.columns = new ArrayList<>();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            Column column = table.getColumn(i);
+            this.columns.add(column);
+        }
+    }
+
     @Override
     public String getName() {
         return name;
@@ -25,7 +34,7 @@ class TableImpl implements Table {
             System.out.printf("%" + widths.get(i) + "s | ", column.getHeader());
         }
         System.out.println();
-        for (int i = 0; i < columns.get(0).count(); i++) {
+        for (int i = 0; i < getRowCount(); i++) {
             for (Column column : columns) {
                 String value = column.getValue(i);
                 System.out.printf("%" + widths.get(columns.indexOf(column)) + "s | ", value);
@@ -36,7 +45,7 @@ class TableImpl implements Table {
 
     private int getColumnWidth(Column column) {
         int maxLength = column.getHeader().length();
-        for (int i = 0; i < column.count(); i++) {
+        for (int i = 0; i < getRowCount(); i++) {
             int length;
             if (column.getValue(i) == null) { length = 0; }
             else { length = column.getValue(i).length(); }
@@ -48,7 +57,7 @@ class TableImpl implements Table {
     @Override
     public void describe() {
         System.out.println("<" + toString() + ">");
-        int entries = columns.get(0).count();
+        int entries = getRowCount();
         System.out.println("RangeIndex: " + entries + " entries, 0 to " + (entries-1));
         System.out.println("Data Columns (total " + columns.size() + " columns):");
 
@@ -57,8 +66,8 @@ class TableImpl implements Table {
         List<Object[]> rows = new ArrayList<>();
 
         int intType = 0, stringType = 0;
-        for (int i = 0; i < columns.size(); i++) {
-            Column column = columns.get(i);
+        for (int i = 0; i < getColumnCount(); i++) {
+            Column column = getColumn(i);
             String columnName = column.getHeader();
             long nonNullCount = column.getNullCount();
             String dtype = null;
@@ -82,23 +91,14 @@ class TableImpl implements Table {
 
     @Override
     public Table head() {
-        List<Column> newColumns = new ArrayList<>();
-        for (Column column : columns) {
-            int min = Math.min(5, column.count());
-            Object[] values = new Object[min];
-            for (int i = 0; i < min; i++) {
-                values[i] = column.getValue(i);
-            }
-            newColumns.add(new ColumnImpl(column.getHeader(), values));
-        }
-        return new TableImpl(name, newColumns);
+        return head(5);
     }
 
     @Override
     public Table head(int lineCount) {
         List<Column> newColumns = new ArrayList<>();
         for (Column column : columns) {
-            int min = Math.min(lineCount, column.count());
+            int min = Math.min(lineCount, getRowCount());
             Object[] values = new Object[min];
             for (int i = 0; i < min; i++) {
                 values[i] = column.getValue(i);
@@ -110,25 +110,15 @@ class TableImpl implements Table {
 
     @Override
     public Table tail() {
-        List<Column> newColumns = new ArrayList<>();
-        for (Column column : columns) {
-            int startIndex = Math.max(0, column.count() - 5);
-            int min = Math.min(5, column.count());
-            Object[] values = new Object[min];
-            for (int i = 0; i < min; i++) {
-                values[i] = column.getValue(i+startIndex);
-            }
-            newColumns.add(new ColumnImpl(column.getHeader(), values));
-        }
-        return new TableImpl(name, newColumns);
+        return tail(5);
     }
 
     @Override
     public Table tail(int lineCount) {
         List<Column> newColumns = new ArrayList<>();
         for (Column column : columns) {
-            int startIndex = Math.max(0, column.count() - lineCount);
-            int min = Math.min(lineCount, column.count());
+            int startIndex = Math.max(0, getRowCount() - lineCount);
+            int min = Math.min(lineCount, getRowCount());
             Object[] values = new Object[min];
             for (int i = 0; i < min; i++) {
                 values[i] = column.getValue(i+startIndex);
@@ -168,10 +158,7 @@ class TableImpl implements Table {
 
     @Override
     public Table selectColumns(int beginIndex, int endIndex) {
-        List<Column> newColumns = new ArrayList<>();
-        for (int i = 0; i < endIndex-beginIndex; i++) {
-            newColumns.add(columns.get(i+beginIndex));
-        }
+        List<Column> newColumns = columns.subList(beginIndex, endIndex);
         return new TableImpl(name, newColumns);
     }
 
@@ -189,8 +176,17 @@ class TableImpl implements Table {
 
     @Override
     public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {
-        List<Object> columnValues = extractColumnValues(byIndexOfColumn);
-        List<IndexedValue> indexedValues = createIndexedValues(columnValues);
+        class IndexedValue {
+            private final int index;
+            private final Object value;
+
+            IndexedValue(int index, Object value) {
+                this.index = index;
+                this.value = value;
+            }
+            int getIndex() { return index; }
+            Object getValue() {return value; }
+        }
         class IndexedValueCompare implements Comparator<IndexedValue> {
             @Override
             public int compare(IndexedValue value1, IndexedValue value2) {
@@ -217,6 +213,14 @@ class TableImpl implements Table {
                 return isAscending ? result : -result;
             }
         }
+        List<Object> columnValues = new ArrayList<>();
+        for (int i = 0; i < columns.get(byIndexOfColumn).count(); i++) {
+            columnValues.add(columns.get(byIndexOfColumn).getValue(i));
+        }
+        List<IndexedValue> indexedValues = new ArrayList<>();
+        for(int i = 0; i < columnValues.size(); i++) {
+            indexedValues.add(new IndexedValue(i, columnValues.get(i)));
+        }
         Collections.sort(indexedValues, new IndexedValueCompare());
 
         List<Integer> sortedIndices = new ArrayList<>();
@@ -235,47 +239,33 @@ class TableImpl implements Table {
         return this;
     }
 
-    private List<Object> extractColumnValues(int columnIndex) {
-        List<Object> values = new ArrayList<>();
-        for (int i = 0; i < columns.get(columnIndex).count(); i++) {
-            values.add(columns.get(columnIndex).getValue(i));
-        } return values;
+    @Override
+    public int getRowCount() {
+        if (columns.isEmpty()) { return 0; }
+        else { return columns.get(0).count(); }
     }
 
-    private List<IndexedValue> createIndexedValues(List<Object> values) {
-        List<IndexedValue> indexedValues = new ArrayList<>();
-        for (int i = 0; i < values.size(); i++) {
-            indexedValues.add(new IndexedValue(i, values.get(i)));
-        } return indexedValues;
-    }
+    @Override
+    public int getColumnCount() { return columns.size(); }
 
-    private class IndexedValue {
-        private final int index;
-        private final Object value;
+    @Override
+    public Column getColumn(int index) { return columns.get(index); }
 
-        IndexedValue(int index, Object value) {
-            this.index = index;
-            this.value = value;
+    @Override
+    public Column getColumn(String name) {
+        for (Column column : columns) {
+            if (column.getHeader().equals(name)) {
+                return column;
+            }
         }
-        int getIndex() { return index; }
-        Object getValue() {return value; }
+        throw new IllegalArgumentException("Column with name '"+name + "'does not exist.");
     }
 
-//    @Override
-//    public int getRowCount() {}
-//
-//    @Override
-//    public int getColumnCount() {}
-//
-//    @Override
-//    public Column getColumn(int index) {}
-//
-//    @Override
-//    public Column getColumn(String name) {}
-//
-//    @Override
-//    public Table crossJoin(Table rightTable) {}
-//
+    @Override
+    public Table crossJoin(Table rightTable) {
+        return null;
+    }
+
 //    @Override
 //    public Table innerJoin(Table rightTable, List<JoinColumn> joinColumns) {}
 //
