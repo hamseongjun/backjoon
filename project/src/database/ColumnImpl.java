@@ -22,12 +22,16 @@ class ColumnImpl implements Column {
 
 //    @Override
 //    public <T extends Number> T getValue(int index, Class<T> t) {}
-//
-//    @Override
-//    public void setValue(int index, String value) {}
-//
-//    @Override
-//    public void setValue(int index, int value) {}
+
+    @Override
+    public void setValue(int index, String value) {
+        values[index] = value;
+    }
+
+    @Override
+    public void setValue(int index, int value) {
+        values[index] = value;
+    }
 
     @Override
     public int count() {
@@ -70,5 +74,4 @@ class ColumnImpl implements Column {
         }
         return count;
     }
-
 }

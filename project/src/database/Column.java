@@ -12,14 +12,14 @@ public interface Column {
 //     * @return cell 값을 타입 t로 반환, cell 값이 null이면 null 반환, 타입 t로 변환 불가능한 존재하는 값에 대해서는 예외 발생
 //     */
 //    <T extends Number> T getValue(int index, Class<T> t);
-//
-//    void setValue(int index, String value);
-//
-//    /**
-//     * @param value int 리터럴을 index의 cell 값으로 건네고 싶을 때 사용
-//     */
-//    void setValue(int index, int value);
-//
+
+    void setValue(int index, String value);
+
+    /**
+     * @param value int 리터럴을 index의 cell 값으로 건네고 싶을 때 사용
+     */
+    void setValue(int index, int value);
+
     /**
      * @return null 포함 모든 cell 개수 반환
      */

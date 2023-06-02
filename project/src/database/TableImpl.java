@@ -1,13 +1,10 @@
 package database;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
+import java.util.*;
 
 class TableImpl implements Table {
-    private String name;
-    private List<Column> columns;
+    private final String name;
+    private final List<Column> columns;
 
     TableImpl(String name, List<Column> columns) {
         this.name = name;
@@ -192,7 +189,76 @@ class TableImpl implements Table {
 
     @Override
     public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {
+        List<Object> columnValues = extractColumnValues(byIndexOfColumn);
+        List<IndexedValue> indexedValues = createIndexedValues(columnValues);
+        class IndexedValueCompare implements Comparator<IndexedValue> {
+            @Override
+            public int compare(IndexedValue value1, IndexedValue value2) {
+                Object obj1 = value1.getValue();
+                Object obj2 = value2.getValue();
 
+                if (obj1 == null && obj2 == null) {
+                    return  0;
+                } else if (obj1 == null) {
+                    return isNullFirst ? -1 : 1;
+                } else if (obj2 == null) {
+                    return isNullFirst ? 1 : -1;
+                }
+
+                int result;
+                if (obj1 instanceof Integer) {
+                    result = Integer.compare((Integer) obj1, (Integer) obj2);
+                } else if (obj1 instanceof  Double) {
+                    result = Double.compare((Double) obj1, (Double) obj2);
+                } else {
+                    String string1 = (String) obj1, string2 = (String) obj2;
+                    result = string1.compareTo(string2);
+                }
+                return isAscending ? result : -result;
+            }
+        }
+        Collections.sort(indexedValues, new IndexedValueCompare());
+
+        List<Integer> sortedIndices = new ArrayList<>();
+        for (IndexedValue indexedValue : indexedValues) {
+            sortedIndices.add(indexedValue.getIndex());
+        }
+        for (Column column : columns) {
+            List<Object> sortedValues = new ArrayList<>();
+            for (int index : sortedIndices) {
+                sortedValues.add(column.getValue(index));
+            }
+            Object[] newColumn = sortedValues.toArray();
+            Column sortedColumn = new ColumnImpl(column.getHeader(), newColumn);
+            columns.set(columns.indexOf(column), sortedColumn);
+        }
+        return this;
+    }
+
+    private List<Object> extractColumnValues(int columnIndex) {
+        List<Object> values = new ArrayList<>();
+        for (int i = 0; i < columns.get(columnIndex).count(); i++) {
+            values.add(columns.get(columnIndex).getValue(i));
+        } return values;
+    }
+
+    private List<IndexedValue> createIndexedValues(List<Object> values) {
+        List<IndexedValue> indexedValues = new ArrayList<>();
+        for (int i = 0; i < values.size(); i++) {
+            indexedValues.add(new IndexedValue(i, values.get(i)));
+        } return indexedValues;
+    }
+
+    private class IndexedValue {
+        private final int index;
+        private final Object value;
+
+        IndexedValue(int index, Object value) {
+            this.index = index;
+            this.value = value;
+        }
+        int getIndex() { return index; }
+        Object getValue() {return value; }
     }
 
 //    @Override
