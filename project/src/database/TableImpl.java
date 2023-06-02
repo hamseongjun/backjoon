@@ -83,36 +83,118 @@ class TableImpl implements Table {
         System.out.println("dtypes: int(" + intType + "), String(" + stringType + ")");
     }
 
-//    @Override
-//    public Table head() {}
-//
-//    @Override
-//    public Table head(int lineCount) {}
-//
-//    @Override
-//    public Table tail() {}
-//
-//    @Override
-//    public Table tail(int lineCount) {}
-//
-//    @Override
-//    public Table selectRows(int beginIndex, int endIndex) {}
-//
-//    @Override
-//    public Table selectRowsAt(int ...indices) {}
-//
-//    @Override
-//    public Table selectColumns(int beginIndex, int endIndex) {}
-//
-//    @Override
-//    public Table selectColumnsAt(int ...indices) {}
-//
+    @Override
+    public Table head() {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            int min = Math.min(5, column.count());
+            Object[] values = new Object[min];
+            for (int i = 0; i < min; i++) {
+                values[i] = column.getValue(i);
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table head(int lineCount) {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            int min = Math.min(lineCount, column.count());
+            Object[] values = new Object[min];
+            for (int i = 0; i < min; i++) {
+                values[i] = column.getValue(i);
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table tail() {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            int startIndex = Math.max(0, column.count() - 5);
+            int min = Math.min(5, column.count());
+            Object[] values = new Object[min];
+            for (int i = 0; i < min; i++) {
+                values[i] = column.getValue(i+startIndex);
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table tail(int lineCount) {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            int startIndex = Math.max(0, column.count() - lineCount);
+            int min = Math.min(lineCount, column.count());
+            Object[] values = new Object[min];
+            for (int i = 0; i < min; i++) {
+                values[i] = column.getValue(i+startIndex);
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table selectRows(int beginIndex, int endIndex) {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            Object[] values = new Object[endIndex-beginIndex];
+            for (int i = 0; i < endIndex-beginIndex; i++) {
+                values[i] = column.getValue(i+beginIndex);
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table selectRowsAt(int ...indices) {
+        List<Column> newColumns = new ArrayList<>();
+        for (Column column : columns) {
+            Object[] values = new Object[indices.length];
+            int i = 0;
+            for (int index : indices) {
+                values[i] = column.getValue(index);
+                i++;
+            }
+            newColumns.add(new ColumnImpl(column.getHeader(), values));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table selectColumns(int beginIndex, int endIndex) {
+        List<Column> newColumns = new ArrayList<>();
+        for (int i = 0; i < endIndex-beginIndex; i++) {
+            newColumns.add(columns.get(i+beginIndex));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
+    @Override
+    public Table selectColumnsAt(int ...indices) {
+        List<Column> newColumns = new ArrayList<>();
+        for (int index : indices) {
+            newColumns.add(columns.get(index));
+        }
+        return new TableImpl(name, newColumns);
+    }
+
 //    @Override
 //    public <T> Table selectRowsBy(String columnName, Predicate<T> predicate) {}
-//
-//    @Override
-//    public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {}
-//
+
+    @Override
+    public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {
+
+    }
+
 //    @Override
 //    public int getRowCount() {}
 //
