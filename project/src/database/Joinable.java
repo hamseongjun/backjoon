@@ -6,7 +6,7 @@ public interface Joinable {
     Table crossJoin(Table rightTable);
     Table innerJoin(Table rightTable, List<JoinColumn> joinColumns);
 
-//    Table outerJoin(Table rightTable, List<JoinColumn> joinColumns);
-//
+    Table outerJoin(Table rightTable, List<JoinColumn> joinColumns);
+
 //    Table fullOuterJoin(Table rightTable, List<JoinColumn> joinColumns);
 }

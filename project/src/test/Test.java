@@ -106,8 +106,8 @@ public class Test {
         rightTable = translators;
 
 //        17) outer join
-        Table outerJoined = testTable.outerJoin(rightTable, List.of(new JoinColumn("translator_id", "id")));
-        outerJoined.show();
+//        Table outerJoined = testTable.outerJoin(rightTable, List.of(new JoinColumn("translator_id", "id")));
+//        outerJoined.show();
 
 //        18) full outer join
 //        Table fullOuterJoined = testTable.fullOuterJoin(rightTable, List.of(new JoinColumn("translator_id", "id")));
