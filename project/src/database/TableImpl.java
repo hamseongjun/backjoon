@@ -70,7 +70,7 @@ class TableImpl implements Table {
             Column column = getColumn(i);
             String columnName = column.getHeader();
             long nonNullCount = column.getNullCount();
-            String dtype = null;
+            String dtype;
             if (column.isNumericColumn()) { dtype =  "int"; intType++;}
             else { dtype = "String"; stringType++;}
 
@@ -263,7 +263,46 @@ class TableImpl implements Table {
 
     @Override
     public Table crossJoin(Table rightTable) {
-        return null;
+        String newName = "crossJoined (" + name + "-" + rightTable.getName() + ")";
+        List<Column> newColumns = new ArrayList<>();
+
+        // header들 생성
+        List<String> headers = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++) {
+            headers.add(name + "." + getColumn(i).getHeader());
+        }
+        for (int i = 0; i < rightTable.getColumnCount(); i++) {
+            headers.add(rightTable.getName() + "." + rightTable.getColumn(i).getHeader());
+        }
+
+        // Object[]들 생성
+        List<Object[]> columnValues = new ArrayList<>();
+        for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++) {
+            columnValues.add(new Object[getRowCount() * rightTable.getRowCount()]);
+        }
+
+        // crossJoining
+        for (int i = 0; i < getRowCount(); i++) {
+            for (int j = 0; j < rightTable.getRowCount(); j++) {
+                for (Column column : columns) {
+                    int indexOfColumn = columns.indexOf(column);
+                    columnValues.get(indexOfColumn)[i+j] = column.getValue(i);
+                }
+                for (int k = 0; k < rightTable.getColumnCount(); k++) {
+                    int indexOfColumn = getColumnCount() + k;
+                    columnValues.get(indexOfColumn)[i+j] = rightTable.getColumn(k).getValue(j);
+                }
+            }
+        }
+
+        // columns 생성
+        for (Object[] columnValue : columnValues) {
+            String header = headers.get(columnValues.indexOf(columnValue));
+            Column column = new ColumnImpl(header, columnValue);
+            newColumns.add(column);
+        }
+
+        return new TableImpl(newName, newColumns);
     }
 
 //    @Override

@@ -96,8 +96,8 @@ public class Test {
         Table rightTable = authors;
 
 //        15) cross join
-//        Table crossJoined = testTable.crossJoin(rightTable);
-//        crossJoined.show();
+        Table crossJoined = testTable.crossJoin(rightTable);
+        crossJoined.show();
 
 //        16) inner join
 //        Table innerJoined = testTable.innerJoin(rightTable, List.of(new JoinColumn("author_id", "id")));
