@@ -268,21 +268,18 @@ class TableImpl implements Table {
 
         // header들 생성
         List<String> headers = new ArrayList<>();
-        for (int i = 0; i < getColumnCount(); i++) {
+        for (int i = 0; i < getColumnCount(); i++)
             headers.add(name + "." + getColumn(i).getHeader());
-        }
-        for (int i = 0; i < rightTable.getColumnCount(); i++) {
+        for (int i = 0; i < rightTable.getColumnCount(); i++)
             headers.add(rightTable.getName() + "." + rightTable.getColumn(i).getHeader());
-        }
 
         // Object[]들 생성
         List<Object[]> columnValues = new ArrayList<>();
-        for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++) {
+        for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++)
             columnValues.add(new Object[getRowCount() * rightTable.getRowCount()]);
-        }
 
-        int count = 0;
         // crossJoining
+        int count = 0;
         for (int i = 0; i < getRowCount(); i++) {
             for (int j = 0; j < rightTable.getRowCount(); j++) {
                 for (Column column : columns) {
@@ -296,7 +293,6 @@ class TableImpl implements Table {
                 count++;
             }
         }
-
         // columns 생성
         for (Object[] columnValue : columnValues) {
             String header = headers.get(columnValues.indexOf(columnValue));
@@ -307,9 +303,57 @@ class TableImpl implements Table {
         return new TableImpl(newName, newColumns);
     }
 
-//    @Override
-//    public Table innerJoin(Table rightTable, List<JoinColumn> joinColumns) {}
-//
+    @Override
+    public Table innerJoin(Table rightTable, List<JoinColumn> joinColumns) {
+        String newName = "innerJoined (" + name + "-" + rightTable.getName() + ")";
+        Table crossJoinedTable = crossJoin(rightTable);
+
+        // header들 생성
+        List<String> headers = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++)
+            headers.add(name + "." + getColumn(i).getHeader());
+        for (int i = 0; i < rightTable.getColumnCount(); i++)
+            headers.add(rightTable.getName() + "." + rightTable.getColumn(i).getHeader());
+
+        // Object[]들 생성
+        List<Object[]> columnValues = new ArrayList<>();
+        for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++)
+            columnValues.add(new Object[getRowCount() * rightTable.getRowCount()]);
+
+        // innerJoining
+        List<Integer> matchingIndices = new ArrayList<>();
+        for (int i = 0; i < crossJoinedTable.getRowCount(); i++) {
+            boolean isCorrect = true;
+            for (JoinColumn joinColumn : joinColumns) {
+                String columnNameOfThisTable = joinColumn.getColumnOfThisTable();
+                String columnNameOfAnotherTable = joinColumn.getColumnOfAnotherTable();
+                int columnIndexOfThisTable = columns.indexOf(getColumn(columnNameOfThisTable));
+                int columnIndexOfAnotherTable = 0;
+                for (int j = 0; j < rightTable.getColumnCount(); j++) {
+                    if (rightTable.getColumn(j).getHeader().equals(columnNameOfAnotherTable)) {
+                        columnIndexOfAnotherTable = getColumnCount() + j;
+                        break;
+                    }
+                }
+                String valueOfThisTable = crossJoinedTable.getColumn(columnIndexOfThisTable).getValue(i);
+                String valueOfAnotherTable = crossJoinedTable.getColumn(columnIndexOfAnotherTable).getValue(i);
+                if (!valueOfThisTable.equals(valueOfAnotherTable)) {
+                    isCorrect = false; break;
+                }
+            }
+            if (isCorrect) {
+                matchingIndices.add(i);
+            }
+        }
+        // indecies 언박싱
+        int[] intArray = new int[matchingIndices.size()];
+        for (int i = 0; i < matchingIndices.size(); i++) {
+            intArray[i] = matchingIndices.get(i);
+        }
+
+        return crossJoinedTable.selectRowsAt(intArray);
+    }
+
 //    @Override
 //    public Table outerJoin(Table rightTable, List<JoinColumn> joinColumns) {}
 //
