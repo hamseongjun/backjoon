@@ -281,17 +281,19 @@ class TableImpl implements Table {
             columnValues.add(new Object[getRowCount() * rightTable.getRowCount()]);
         }
 
+        int count = 0;
         // crossJoining
         for (int i = 0; i < getRowCount(); i++) {
             for (int j = 0; j < rightTable.getRowCount(); j++) {
                 for (Column column : columns) {
                     int indexOfColumn = columns.indexOf(column);
-                    columnValues.get(indexOfColumn)[i+j] = column.getValue(i);
+                    columnValues.get(indexOfColumn)[count] = column.getValue(i);
                 }
                 for (int k = 0; k < rightTable.getColumnCount(); k++) {
                     int indexOfColumn = getColumnCount() + k;
-                    columnValues.get(indexOfColumn)[i+j] = rightTable.getColumn(k).getValue(j);
+                    columnValues.get(indexOfColumn)[count] = rightTable.getColumn(k).getValue(j);
                 }
+                count++;
             }
         }
 
