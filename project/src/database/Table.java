@@ -60,11 +60,11 @@ public interface Table extends Joinable {
      */
     Table selectColumnsAt(int ...indices);
 
-//    /**
-//     * @param
-//     * @return 검색 조건에 해당하는 행으로 구성된 새로운 Table 생성 후 반환, 제일 나중에 구현 시도하세요.
-//     */
-//    <T> Table selectRowsBy(String columnName, Predicate<T> predicate);
+    /**
+     * @param
+     * @return 검색 조건에 해당하는 행으로 구성된 새로운 Table 생성 후 반환, 제일 나중에 구현 시도하세요.
+     */
+    <T> Table selectRowsBy(String columnName, Predicate<T> predicate);
 
     /**
      * @return 원본 Table이 정렬되어 반환된다.

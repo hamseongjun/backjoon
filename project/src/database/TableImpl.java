@@ -1,6 +1,7 @@
 package database;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 class TableImpl implements Table {
     private final String name;
@@ -171,8 +172,32 @@ class TableImpl implements Table {
         return new TableImpl(name, newColumns);
     }
 
-//    @Override
-//    public <T> Table selectRowsBy(String columnName, Predicate<T> predicate) {}
+    @Override
+    public <T> Table selectRowsBy(String columnName, Predicate<T> predicate) {
+        List<Integer> filteredIndices = new ArrayList<>();
+        Column selectedColumn = getColumn(columnName);
+        boolean isNumericColumn = selectedColumn.isNumericColumn();
+
+        if (isNumericColumn) {
+            for (int i = 0; i < getRowCount(); i++) {
+                    if (predicate.test((T) selectedColumn.getValue(i, Integer.class)))
+                        filteredIndices.add(i);
+                }
+            }
+        else {
+            for (int i = 0; i < getRowCount(); i++) {
+                if (predicate.test((T) selectedColumn.getValue(i)))
+                    filteredIndices.add(i);
+            }
+        }
+
+        int[] selectedRows = new int[filteredIndices.size()];
+        for (int i = 0; i < filteredIndices.size(); i++) {
+            selectedRows[i] = filteredIndices.get(i);
+        }
+
+        return  selectRowsAt(selectedRows);
+    }
 
     @Override
     public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {
@@ -258,7 +283,7 @@ class TableImpl implements Table {
                 return column;
             }
         }
-        throw new IllegalArgumentException("Column with name '"+name + "'does not exist.");
+        throw new IllegalArgumentException("Column with name '"+ name + "'does not exist.");
     }
 
     @Override

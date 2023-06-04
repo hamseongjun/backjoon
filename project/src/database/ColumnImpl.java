@@ -1,5 +1,7 @@
 package database;
 
+import java.net.Inet4Address;
+
 class ColumnImpl implements Column {
     private String header;
     private Object[] values;
@@ -20,8 +22,20 @@ class ColumnImpl implements Column {
         else { return String.valueOf(values[index]); }
     }
 
-//    @Override
-//    public <T extends Number> T getValue(int index, Class<T> t) {}
+    @Override
+    public <T extends Number> T getValue(int index, Class<T> t) {
+        if (values[index] == null) {
+            return null;
+        } else if (t == Double.class) {
+            return t.cast(Double.valueOf(String.valueOf(values[index])));
+        } else if (t == Long.class) {
+            return t.cast(Long.valueOf(String.valueOf(values[index])));
+        } else if (t == Integer.class) {
+            return t.cast(Integer.valueOf(String.valueOf(values[index])));
+        } else {
+            throw new IllegalArgumentException("Unsupported type: " + t.getSimpleName());
+        }
+    }
 
     @Override
     public void setValue(int index, String value) {
@@ -52,18 +66,16 @@ class ColumnImpl implements Column {
             if (getValue(i) == null) { continue; }
             try {
                 Integer value = Integer.valueOf(getValue(i));
-                return true;
             } catch (NumberFormatException nonInt) {
                 try {
                     Double value = Double.valueOf(getValue(i));
-                    return true;
                 }
                 catch (NumberFormatException nonDouble) {
                     return false;
                 }
             }
         }
-        return false;
+        return true;
     }
 
     @Override

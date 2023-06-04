@@ -6,12 +6,12 @@ public interface Column {
     /* cell 값을 String으로 반환 */
     String getValue(int index);
 
-//    /**
-//     * @param index
-//     * @param t Double.class, Long.class, Integer.class
-//     * @return cell 값을 타입 t로 반환, cell 값이 null이면 null 반환, 타입 t로 변환 불가능한 존재하는 값에 대해서는 예외 발생
-//     */
-//    <T extends Number> T getValue(int index, Class<T> t);
+    /**
+     * @param index
+     * @param t Double.class, Long.class, Integer.class
+     * @return cell 값을 타입 t로 반환, cell 값이 null이면 null 반환, 타입 t로 변환 불가능한 존재하는 값에 대해서는 예외 발생
+     */
+    <T extends Number> T getValue(int index, Class<T> t);
 
     void setValue(int index, String value);
 
