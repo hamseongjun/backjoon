@@ -347,7 +347,6 @@ class TableImpl implements Table {
     @Override
     public Table outerJoin(Table rightTable, List<JoinColumn> joinColumns) {
         String newName = "outerJoined (" + name + "-" + rightTable.getName() + ")";
-//        Table crossJoinedTable = crossJoin(rightTable);
 
         List<Column> newColumns = new ArrayList<>();
 
@@ -363,7 +362,7 @@ class TableImpl implements Table {
         for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++)
             columnValues.add(new Object[getRowCount()]);
 
-        // outerJoining
+        // indices 생성
         List<Integer> matchingIndices = new ArrayList<>();
         List<Integer> matchingIndicesOfRightTable = new ArrayList<>();
         List<Integer> noMatchingIndices = new ArrayList<>();
@@ -427,7 +426,102 @@ class TableImpl implements Table {
         return new TableImpl(newName, newColumns);
     }
 
-//    @Override
-//    public Table fullOuterJoin(Table rightTable, List<JoinColumn> joinColumns) {}
+    @Override
+    public Table fullOuterJoin(Table rightTable, List<JoinColumn> joinColumns) {
+        String newName = "fullOuterJoin (" + name + "-" + rightTable.getName() + ")";
 
+        List<Column> newColumns = new ArrayList<>();
+
+        // header들 생성
+        List<String> headers = new ArrayList<>();
+        for (int i = 0; i < getColumnCount(); i++)
+            headers.add(name + "." + getColumn(i).getHeader());
+        for (int i = 0; i < rightTable.getColumnCount(); i++)
+            headers.add(rightTable.getName() + "." + rightTable.getColumn(i).getHeader());
+
+        // indices 생성
+        List<Integer> matchingIndices = new ArrayList<>();
+        List<Integer> matchingIndicesOfRightTable = new ArrayList<>();
+        List<Integer> noMatchingIndices = new ArrayList<>();
+        for (int i = 0; i < getRowCount(); i++) {
+            boolean isCorrect = false, noMatch = true;
+            for (int j = 0; j < rightTable.getRowCount(); j++) {
+                isCorrect = true;
+                for (JoinColumn joinColumn : joinColumns) {
+                    String columnNameOfThisTable = joinColumn.getColumnOfThisTable();
+                    String columnNameOfAnotherTable = joinColumn.getColumnOfAnotherTable();
+                    String valueOfThisTable = getColumn(columnNameOfThisTable).getValue(i);
+                    String valueOfAnotherTable = rightTable.getColumn(columnNameOfAnotherTable).getValue(j);
+                    if (valueOfThisTable == null || valueOfAnotherTable == null) {
+                        isCorrect = false; break;
+                    } else if (!valueOfThisTable.equals(valueOfAnotherTable)) {
+                        isCorrect = false; break;
+                    }
+                }
+                if (isCorrect) {
+                    matchingIndices.add(i); matchingIndicesOfRightTable.add(j);
+                    noMatch = false;
+                }
+            }
+            if(noMatch)
+                noMatchingIndices.add(i);
+        }
+        // right noMatchingIndices 생성
+        List<Integer> noMatchingIndicesOfRightTable = new ArrayList<>();
+        for (int i = 0; i < rightTable.getRowCount(); i++) {
+            if (!matchingIndicesOfRightTable.contains(i)) {
+                noMatchingIndicesOfRightTable.add(i);
+            }
+        }
+        // Object[]들 생성
+        List<Object[]> columnValues = new ArrayList<>();
+        for (int i = 0; i < getColumnCount() + rightTable.getColumnCount(); i++)
+            columnValues.add(new Object[getRowCount() + noMatchingIndicesOfRightTable.size()]);
+
+        // inner join
+        for (Integer matchingIndex : matchingIndices) {
+            int m = matchingIndices.indexOf(matchingIndex);
+            for (Column column : columns) {
+                int indexOfColumn = columns.indexOf(column);
+                columnValues.get(indexOfColumn)[m] = column.getValue(matchingIndex);
+            }
+        }
+        for (Integer matchingIndexOfRightTable : matchingIndicesOfRightTable) {
+            int m = matchingIndicesOfRightTable.indexOf(matchingIndexOfRightTable);
+            for (int i = 0; i < rightTable.getColumnCount(); i++) {
+                int indexOfColumn = getColumnCount() + i;
+                columnValues.get(indexOfColumn)[m] = rightTable.getColumn(i).getValue(matchingIndexOfRightTable);
+            }
+        }
+        // outer join
+        for (Integer noMatchingIndex : noMatchingIndices) {
+            int n = matchingIndices.size() + noMatchingIndices.indexOf(noMatchingIndex);
+            for (Column column : columns) {
+                int indexOfColumn = columns.indexOf(column);
+                columnValues.get(indexOfColumn)[n] = column.getValue(noMatchingIndex);
+            }
+            for (int i = 0; i < rightTable.getColumnCount(); i++) {
+                int indexOfColumn = getColumnCount() + i;
+                columnValues.get(indexOfColumn)[n] = null;
+            }
+        }
+        for (Integer noMatchingIndex : noMatchingIndicesOfRightTable) {
+            int n = matchingIndices.size() + noMatchingIndices.size() + noMatchingIndicesOfRightTable.indexOf(noMatchingIndex);
+            for (int i =0; i < getColumnCount(); i++) {
+                columnValues.get(i)[n] = null;
+            }
+            for (int i = 0; i < rightTable.getColumnCount(); i++) {
+                int indexOfColumn = getColumnCount() + i;
+                columnValues.get(indexOfColumn)[n] = rightTable.getColumn(i).getValue(noMatchingIndex);
+            }
+        }
+        // columns 생성
+        for (Object[] columnValue : columnValues) {
+            String header = headers.get(columnValues.indexOf(columnValue));
+            Column column = new ColumnImpl(header, columnValue);
+            newColumns.add(column);
+        }
+
+        return new TableImpl(newName, newColumns);
+    }
 }

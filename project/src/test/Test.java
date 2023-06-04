@@ -110,8 +110,8 @@ public class Test {
 //        outerJoined.show();
 
 //        18) full outer join
-//        Table fullOuterJoined = testTable.fullOuterJoin(rightTable, List.of(new JoinColumn("translator_id", "id")));
-//        fullOuterJoined.show();
+        Table fullOuterJoined = testTable.fullOuterJoin(rightTable, List.of(new JoinColumn("translator_id", "id")));
+        fullOuterJoined.show();
 
 //        19) 조건식을 만족하는 행을 얻는다.
 //        testTable.selectRowsBy("title", (String x) -> x.contains("Your")).show();

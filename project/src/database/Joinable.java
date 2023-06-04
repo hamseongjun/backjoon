@@ -8,5 +8,5 @@ public interface Joinable {
 
     Table outerJoin(Table rightTable, List<JoinColumn> joinColumns);
 
-//    Table fullOuterJoin(Table rightTable, List<JoinColumn> joinColumns);
+    Table fullOuterJoin(Table rightTable, List<JoinColumn> joinColumns);
 }
