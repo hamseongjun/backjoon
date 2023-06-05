@@ -1,7 +1,5 @@
 package database;
 
-import java.net.Inet4Address;
-
 class ColumnImpl implements Column {
     private String header;
     private Object[] values;

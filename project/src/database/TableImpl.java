@@ -201,67 +201,85 @@ class TableImpl implements Table {
 
     @Override
     public Table sort(int byIndexOfColumn, boolean isAscending, boolean isNullFirst) {
-        class IndexedValue {
-            private final int index;
-            private final Object value;
+        List<Integer> nullIndices = new ArrayList<>();
+        List<Integer> existIndices = new ArrayList<>();
+        List<String> stringList = new ArrayList<>();
 
-            IndexedValue(int index, Object value) {
-                this.index = index;
-                this.value = value;
-            }
-            int getIndex() { return index; }
-            Object getValue() {return value; }
-        }
-        class IndexedValueCompare implements Comparator<IndexedValue> {
-            @Override
-            public int compare(IndexedValue value1, IndexedValue value2) {
-                Object obj1 = value1.getValue();
-                Object obj2 = value2.getValue();
-
-                if (obj1 == null && obj2 == null) {
-                    return  0;
-                } else if (obj1 == null) {
-                    return isNullFirst ? -1 : 1;
-                } else if (obj2 == null) {
-                    return isNullFirst ? 1 : -1;
-                }
-
-                int result;
-                if (obj1 instanceof Integer) {
-                    result = Integer.compare((Integer) obj1, (Integer) obj2);
-                } else if (obj1 instanceof  Double) {
-                    result = Double.compare((Double) obj1, (Double) obj2);
-                } else {
-                    String string1 = (String) obj1, string2 = (String) obj2;
-                    result = string1.compareTo(string2);
-                }
-                return isAscending ? result : -result;
-            }
-        }
-        List<Object> columnValues = new ArrayList<>();
+        // 행 번호 & values 저장
         for (int i = 0; i < columns.get(byIndexOfColumn).count(); i++) {
-            columnValues.add(columns.get(byIndexOfColumn).getValue(i));
-        }
-        List<IndexedValue> indexedValues = new ArrayList<>();
-        for(int i = 0; i < columnValues.size(); i++) {
-            indexedValues.add(new IndexedValue(i, columnValues.get(i)));
-        }
-        Collections.sort(indexedValues, new IndexedValueCompare());
-
-        List<Integer> sortedIndices = new ArrayList<>();
-        for (IndexedValue indexedValue : indexedValues) {
-            sortedIndices.add(indexedValue.getIndex());
-        }
-        for (Column column : columns) {
-            List<Object> sortedValues = new ArrayList<>();
-            for (int index : sortedIndices) {
-                sortedValues.add(column.getValue(index));
+            if (columns.get(byIndexOfColumn).getValue(i) == null)
+                nullIndices.add(i);
+            else {
+                existIndices.add(i);
+                stringList.add(columns.get(byIndexOfColumn).getValue(i));
             }
-            Object[] newColumn = sortedValues.toArray();
-            Column sortedColumn = new ColumnImpl(column.getHeader(), newColumn);
-            columns.set(columns.indexOf(column), sortedColumn);
+        }
+        // 배열로 가공
+        String[] stringArr = stringList.toArray(new String[0]);
+        Integer[] indicesArr = existIndices.toArray(new Integer[0]);
+
+        quickSort(stringArr, 0, stringArr.length-1, indicesArr);
+
+        // 리스트로 가공
+        existIndices = Arrays.asList(indicesArr);
+        existIndices = new ArrayList<>(existIndices);
+        // 오름 or 내림차순 선택
+        if (!isAscending) {
+            Collections.reverse(existIndices);
+        }
+
+        // null first or last 선택
+        if (isNullFirst) {
+            nullIndices.addAll(existIndices);
+            indicesArr = nullIndices.toArray(new Integer[0]);
+        } else {
+            existIndices.addAll(nullIndices);
+            indicesArr = existIndices.toArray(new Integer[0]);
+        }
+        // Integer 언박싱
+        int[] intArray = new int[indicesArr.length];
+        for (int i = 0; i < indicesArr.length; i++) {
+            intArray[i] = indicesArr[i];
+        }
+
+        Table sortedTable = selectRowsAt(intArray);
+        for (int i = 0; i < columns.size(); i++) {
+            columns.set(i, sortedTable.getColumn(i));
         }
         return this;
+    }
+
+    private void quickSort(String[] arr, int left, int right, Integer[] indexArr) {
+        if (left >= right)
+            return;
+        int pivotIndex = partition(arr, left, right, indexArr);
+        quickSort(arr, left, pivotIndex - 1, indexArr);
+        quickSort(arr, pivotIndex + 1, right, indexArr);
+    }
+
+    private int partition(String[] arr, int left, int right, Integer[] indexArr) {
+        int lo = left, hi = right;
+        String pivotIndex = arr[left];
+
+        while (lo < hi) {
+            while (arr[hi].compareTo(pivotIndex) > 0 && lo < hi) {
+                hi--;
+            }
+            while ((arr[lo].compareTo(pivotIndex) <= 0) && lo < hi) {
+                lo++;
+            }
+            swap(arr, lo, hi);
+            swap(indexArr, lo, hi);
+        }
+        swap(arr, left, lo);
+        swap(indexArr, left, lo);
+        return lo;
+    }
+
+    private void swap(Object[] a, int i, int j) {
+        Object temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
     }
 
     @Override
@@ -330,7 +348,6 @@ class TableImpl implements Table {
 
     @Override
     public Table innerJoin(Table rightTable, List<JoinColumn> joinColumns) {
-        String newName = "innerJoined (" + name + "-" + rightTable.getName() + ")";
         Table crossJoinedTable = crossJoin(rightTable);
 
         // innerJoining
@@ -360,7 +377,7 @@ class TableImpl implements Table {
                 matchingIndices.add(i);
             }
         }
-        // indecies 언박싱
+        // indices 언박싱
         int[] intArray = new int[matchingIndices.size()];
         for (int i = 0; i < matchingIndices.size(); i++) {
             intArray[i] = matchingIndices.get(i);
