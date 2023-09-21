@@ -214,21 +214,21 @@ class TableImpl implements Table {
                 stringList.add(columns.get(byIndexOfColumn).getValue(i));
             }
         }
-        // 배열로 가공
+        // (배열로 가공)
         String[] stringArr = stringList.toArray(new String[0]);
         Integer[] indicesArr = existIndices.toArray(new Integer[0]);
-
+        // 1. 정렬
         quickSort(stringArr, 0, stringArr.length-1, indicesArr);
 
-        // 리스트로 가공
+        // (리스트로 가공)
         existIndices = Arrays.asList(indicesArr);
         existIndices = new ArrayList<>(existIndices);
-        // 오름 or 내림차순 선택
+        // 2. 오름 or 내림차순 선택
         if (!isAscending) {
             Collections.reverse(existIndices);
         }
 
-        // null first or last 선택
+        // 3. null first or last 선택
         if (isNullFirst) {
             nullIndices.addAll(existIndices);
             indicesArr = nullIndices.toArray(new Integer[0]);
